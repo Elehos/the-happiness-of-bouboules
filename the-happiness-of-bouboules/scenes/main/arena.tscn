@@ -1,0 +1,89 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/main/arena.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
+size = Vector2(840, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vertical"]
+size = Vector2(20, 620)
+
+[node name="Arena" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+
+[node name="Background" type="ColorRect" parent="."]
+offset_left = -640.0
+offset_top = -360.0
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.05, 0.05, 0.06, 1)
+
+[node name="Floor" type="ColorRect" parent="."]
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+color = Color(0.15, 0.15, 0.18, 1)
+
+[node name="TopWall" type="StaticBody2D" parent="."]
+collision_layer = 1
+position = Vector2(0, -310)
+
+[node name="ColorRect" type="ColorRect" parent="TopWall"]
+offset_left = -420.0
+offset_top = -10.0
+offset_right = 420.0
+offset_bottom = 10.0
+color = Color(0.35, 0.35, 0.4, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TopWall"]
+shape = SubResource("RectangleShape2D_horizontal")
+
+[node name="BottomWall" type="StaticBody2D" parent="."]
+collision_layer = 1
+position = Vector2(0, 310)
+
+[node name="ColorRect" type="ColorRect" parent="BottomWall"]
+offset_left = -420.0
+offset_top = -10.0
+offset_right = 420.0
+offset_bottom = 10.0
+color = Color(0.35, 0.35, 0.4, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BottomWall"]
+shape = SubResource("RectangleShape2D_horizontal")
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+collision_layer = 1
+position = Vector2(-410, 0)
+
+[node name="ColorRect" type="ColorRect" parent="LeftWall"]
+offset_left = -10.0
+offset_top = -310.0
+offset_right = 10.0
+offset_bottom = 310.0
+color = Color(0.35, 0.35, 0.4, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("RectangleShape2D_vertical")
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+collision_layer = 1
+position = Vector2(410, 0)
+
+[node name="ColorRect" type="ColorRect" parent="RightWall"]
+offset_left = -10.0
+offset_top = -310.0
+offset_right = 10.0
+offset_bottom = 310.0
+color = Color(0.35, 0.35, 0.4, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("RectangleShape2D_vertical")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 150)
