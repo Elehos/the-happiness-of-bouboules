@@ -1,6 +1,6 @@
 extends Node2D
 
-@onready var player: CharacterBody2D = $Arena/Player
+@onready var player: CharacterBody2D = $Arena/YSortLayer/Player
 @onready var hud: CanvasLayer = $HUD
 
 
