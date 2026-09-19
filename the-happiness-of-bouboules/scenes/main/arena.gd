@@ -377,15 +377,18 @@ func _on_enemy_died() -> void:
 
 func _spawn_coin(position: Vector2) -> void:
 	var coin: Node2D = CoinScene.instantiate()
-	add_child(coin)
+	y_sort_layer.add_child(coin)
 	coin.position = position
 
 
 # Read by Main before this room is torn down, so any coins the player left
 # behind can be respawned at the same spot next time this room is loaded.
+# Coins dropped by enemies end up here too, since enemies (and everything
+# else that needs Y-sorting) live under y_sort_layer, not directly under
+# the room.
 func get_coin_positions() -> Array:
 	var positions := []
-	for child in get_children():
+	for child in y_sort_layer.get_children():
 		if child.is_in_group("coins"):
 			positions.append(child.position)
 	return positions
