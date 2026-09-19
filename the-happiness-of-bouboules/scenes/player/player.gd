@@ -2,31 +2,39 @@ extends CharacterBody2D
 
 const SPEED := 220.0
 const SHOOT_COOLDOWN := 0.25
-const INVINCIBILITY_TIME := 0.5
+const INVINCIBILITY_TIME := 1.0
 const MAX_HEALTH := 3
+
+# Grace period after entering a room (set by Arena) during which doors
+# ignore this player, so briskly walking across a small cleared room (every
+# door in it is open at once) can't carry them straight out the far side
+# before they've registered they changed rooms.
+const DOOR_COOLDOWN := 0.2
 
 const TearScene := preload("res://scenes/projectiles/tear.tscn")
 
 signal health_changed(current: int, max_health: int)
+signal gold_changed(amount: int)
 signal died
 
 var health := MAX_HEALTH
+var gold := 0
 var shoot_cooldown_left := 0.0
 var invincible_left := 0.0
+var door_cooldown_left := 0.0
 
 @onready var hurt_area: Area2D = $HurtArea
 @onready var sprite: Sprite2D = $Sprite2D
-
-
-func _ready() -> void:
-	hurt_area.body_entered.connect(_on_hurt_area_body_entered)
 
 
 func _physics_process(delta: float) -> void:
 	_handle_movement()
 	_handle_shooting(delta)
 	_handle_invincibility(delta)
+	_handle_contact_damage()
 	_update_facing()
+	if door_cooldown_left > 0.0:
+		door_cooldown_left -= delta
 
 
 func _update_facing() -> void:
@@ -73,11 +81,18 @@ func _handle_invincibility(delta: float) -> void:
 	modulate.a = 0.5 if int(invincible_left * 10) % 2 == 0 else 1.0
 
 
-func _on_hurt_area_body_entered(body: Node) -> void:
+func _handle_contact_damage() -> void:
 	if invincible_left > 0.0:
 		return
-	if body.is_in_group("enemies"):
-		take_damage(1)
+	for body in hurt_area.get_overlapping_bodies():
+		if body.is_in_group("enemies"):
+			take_damage(1)
+			break
+
+
+func add_gold(amount: int) -> void:
+	gold += amount
+	gold_changed.emit(gold)
 
 
 func take_damage(amount: int) -> void:
