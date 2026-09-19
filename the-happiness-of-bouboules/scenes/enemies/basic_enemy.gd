@@ -3,6 +3,8 @@ extends CharacterBody2D
 const SPEED := 90.0
 const MAX_HEALTH := 3
 
+signal died
+
 var health := MAX_HEALTH
 var target: Node2D
 
@@ -23,6 +25,7 @@ func _physics_process(_delta: float) -> void:
 func take_damage(amount: int) -> void:
 	health -= amount
 	if health <= 0:
+		died.emit()
 		queue_free()
 		return
 	health_bar.set_health(health, MAX_HEALTH)
