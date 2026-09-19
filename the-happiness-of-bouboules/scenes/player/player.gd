@@ -15,6 +15,7 @@ var shoot_cooldown_left := 0.0
 var invincible_left := 0.0
 
 @onready var hurt_area: Area2D = $HurtArea
+@onready var sprite: Sprite2D = $Sprite2D
 
 
 func _ready() -> void:
@@ -25,6 +26,19 @@ func _physics_process(delta: float) -> void:
 	_handle_movement()
 	_handle_shooting(delta)
 	_handle_invincibility(delta)
+	_update_facing()
+
+
+func _update_facing() -> void:
+	var to_mouse := get_global_mouse_position() - global_position
+	if to_mouse == Vector2.ZERO:
+		return
+	if absf(to_mouse.y) > absf(to_mouse.x):
+		sprite.frame = 2 if to_mouse.y < 0.0 else 0
+		sprite.flip_h = false
+	else:
+		sprite.frame = 1
+		sprite.flip_h = to_mouse.x < 0.0
 
 
 func _handle_movement() -> void:
