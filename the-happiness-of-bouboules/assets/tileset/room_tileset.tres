@@ -3,6 +3,9 @@
 [ext_resource type="Texture2D" uid="uid://svkmuohgv3n7" path="res://assets/tileset/tuile-sol.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://288ejg2rtlfp" path="res://assets/tileset/wall.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://xrmcloyxirb" path="res://assets/tileset/coin wall.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/tileset/tuile-sol-coin.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/tileset/tuile-sol-coin-double.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/tileset/tuile-sol-coin-porte.png" id="6"]
 
 [sub_resource type="TileSetAtlasSource" id="1"]
 texture = ExtResource("1")
@@ -19,8 +22,26 @@ texture = ExtResource("3")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="4"]
+texture = ExtResource("4")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="5"]
+texture = ExtResource("5")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="6"]
+texture = ExtResource("6")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
 [resource]
 tile_size = Vector2i(32, 32)
 sources/0 = SubResource("1")
 sources/1 = SubResource("2")
 sources/2 = SubResource("3")
+sources/3 = SubResource("4")
+sources/4 = SubResource("5")
+sources/5 = SubResource("6")
