@@ -11,10 +11,8 @@ const MAX_ENEMIES := 3
 const DOOR_CHANCE := 0.5
 
 const TILE_SIZE := 32
-const ROOM_WIDTH_TILES := 16
-const ROOM_HEIGHT_TILES := 8
-const ROOM_HALF_WIDTH := ROOM_WIDTH_TILES * TILE_SIZE / 2.0
-const ROOM_HALF_HEIGHT := ROOM_HEIGHT_TILES * TILE_SIZE / 2.0
+const ROOM_WIDTH_TILES := 15
+const ROOM_HEIGHT_TILES := 7
 
 const SPAWN_MARGIN := 60.0
 const MIN_DISTANCE_FROM_PLAYER := 150.0
@@ -30,15 +28,23 @@ const FLIP_V := 8192
 const TRANSPOSE := 16384
 
 @onready var player: Node2D = $Player
+@onready var camera: Camera2D = $Camera2D
 @onready var floor_layer: TileMapLayer = $FloorLayer
 @onready var walls_layer: TileMapLayer = $WallsLayer
+@onready var walls_body: StaticBody2D = $Walls
 
 var doors: Array[Node] = []
 var enemies_alive := 0
 
+# Center of the room and half-extent of its floor, in Arena-local pixels.
+# Computed from the tile grid so an odd tile count still centers correctly.
+var room_center := Vector2.ZERO
+var room_half_size := Vector2.ZERO
+
 
 func _ready() -> void:
 	var origin := _build_room()
+	_position_room(origin)
 	_spawn_doors(origin)
 
 	var enemy_count := randi_range(MIN_ENEMIES, MAX_ENEMIES)
@@ -52,7 +58,7 @@ func _build_room() -> Vector2i:
 
 	for y in ROOM_HEIGHT_TILES:
 		for x in ROOM_WIDTH_TILES:
-			floor_layer.set_cell(origin + Vector2i(x, y), FLOOR_SOURCE_ID, Vector2i.ZERO)
+			floor_layer.set_cell(origin + Vector2i(x, y), FLOOR_SOURCE_ID, Vector2i.ZERO, _random_floor_transform())
 
 	for x in ROOM_WIDTH_TILES:
 		walls_layer.set_cell(origin + Vector2i(x, -1), WALL_SOURCE_ID, Vector2i.ZERO)
@@ -70,6 +76,67 @@ func _build_room() -> Vector2i:
 	return origin
 
 
+func _random_floor_transform() -> int:
+	# The floor tile has no "up" direction, so any of the 8 flip/rotation
+	# combinations looks fine; this just breaks up the visible repetition.
+	var transform := 0
+	if randf() < 0.5:
+		transform |= FLIP_H
+	if randf() < 0.5:
+		transform |= FLIP_V
+	if randf() < 0.5:
+		transform |= TRANSPOSE
+	return transform
+
+
+func _position_room(origin: Vector2i) -> void:
+	room_center = Vector2(
+		(origin.x + ROOM_WIDTH_TILES / 2.0) * TILE_SIZE,
+		(origin.y + ROOM_HEIGHT_TILES / 2.0) * TILE_SIZE
+	)
+	room_half_size = Vector2(ROOM_WIDTH_TILES, ROOM_HEIGHT_TILES) * TILE_SIZE / 2.0
+
+	camera.position = room_center
+	player.position = room_center + Vector2(0.0, room_half_size.y * 0.5)
+
+	_build_wall_colliders()
+
+
+func _build_wall_colliders() -> void:
+	var half_x := room_half_size.x
+	var half_y := room_half_size.y
+	var half_tile := TILE_SIZE / 2.0
+
+	# Top/bottom colliders span the full outer width (including corners);
+	# left/right only span the inner height between them. Same layout as
+	# the wall tiles themselves, just as plain rectangles.
+	_add_wall_collider(
+		room_center + Vector2(0.0, -half_y - half_tile),
+		Vector2(half_x * 2.0 + TILE_SIZE * 2.0, TILE_SIZE)
+	)
+	_add_wall_collider(
+		room_center + Vector2(0.0, half_y + half_tile),
+		Vector2(half_x * 2.0 + TILE_SIZE * 2.0, TILE_SIZE)
+	)
+	_add_wall_collider(
+		room_center + Vector2(-half_x - half_tile, 0.0),
+		Vector2(TILE_SIZE, half_y * 2.0)
+	)
+	_add_wall_collider(
+		room_center + Vector2(half_x + half_tile, 0.0),
+		Vector2(TILE_SIZE, half_y * 2.0)
+	)
+
+
+func _add_wall_collider(local_position: Vector2, size: Vector2) -> void:
+	var shape := RectangleShape2D.new()
+	shape.size = size
+	var collision := CollisionShape2D.new()
+	collision.shape = shape
+	collision.position = local_position
+	walls_body.add_child(collision)
+
+
 func _spawn_doors(origin: Vector2i) -> void:
 	# One slot at the middle of each side; matches where a straight wall
 	# tile would otherwise sit, so the door drops in place of it.
@@ -79,7 +146,9 @@ func _spawn_doors(origin: Vector2i) -> void:
 		origin + Vector2i(-1, ROOM_HEIGHT_TILES / 2),               # left
 		origin + Vector2i(ROOM_WIDTH_TILES, ROOM_HEIGHT_TILES / 2), # right
 	]
-	var rotations := [0.0, 0.0, PI / 2.0, PI / 2.0]
+	# Top/right were correct; bottom and left face the opposite way, so they
+	# need the mirrored rotation instead of reusing top/right's.
+	var rotations := [0.0, PI, -PI / 2.0, PI / 2.0]
 
 	var order := range(cells.size())
 	order.shuffle()
@@ -121,12 +190,12 @@ func _open_doors() -> void:
 
 
 func _random_spawn_position() -> Vector2:
-	var pos := Vector2.ZERO
+	var pos := room_center
 	var attempts := 0
 	while attempts < 20:
-		pos = Vector2(
-			randf_range(-ROOM_HALF_WIDTH + SPAWN_MARGIN, ROOM_HALF_WIDTH - SPAWN_MARGIN),
-			randf_range(-ROOM_HALF_HEIGHT + SPAWN_MARGIN, ROOM_HALF_HEIGHT - SPAWN_MARGIN)
+		pos = room_center + Vector2(
+			randf_range(-room_half_size.x + SPAWN_MARGIN, room_half_size.x - SPAWN_MARGIN),
+			randf_range(-room_half_size.y + SPAWN_MARGIN, room_half_size.y - SPAWN_MARGIN)
 		)
 		if pos.distance_to(player.global_position) >= MIN_DISTANCE_FROM_PLAYER:
 			break

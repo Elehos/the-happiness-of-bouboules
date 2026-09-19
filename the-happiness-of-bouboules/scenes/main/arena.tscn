@@ -1,14 +1,8 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/main/arena.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
 [ext_resource type="TileSet" path="res://assets/tileset/room_tileset.tres" id="3"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
-size = Vector2(576, 32)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_vertical"]
-size = Vector2(32, 256)
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1")
@@ -30,33 +24,7 @@ tile_set = ExtResource("3")
 [node name="WallsLayer" type="TileMapLayer" parent="."]
 tile_set = ExtResource("3")
 
-[node name="TopWall" type="StaticBody2D" parent="."]
+[node name="Walls" type="StaticBody2D" parent="."]
 collision_layer = 1
-position = Vector2(0, -144)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TopWall"]
-shape = SubResource("RectangleShape2D_horizontal")
-
-[node name="BottomWall" type="StaticBody2D" parent="."]
-collision_layer = 1
-position = Vector2(0, 144)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="BottomWall"]
-shape = SubResource("RectangleShape2D_horizontal")
-
-[node name="LeftWall" type="StaticBody2D" parent="."]
-collision_layer = 1
-position = Vector2(-272, 0)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftWall"]
-shape = SubResource("RectangleShape2D_vertical")
-
-[node name="RightWall" type="StaticBody2D" parent="."]
-collision_layer = 1
-position = Vector2(272, 0)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="RightWall"]
-shape = SubResource("RectangleShape2D_vertical")
 
 [node name="Player" parent="." instance=ExtResource("2")]
-position = Vector2(0, 64)
