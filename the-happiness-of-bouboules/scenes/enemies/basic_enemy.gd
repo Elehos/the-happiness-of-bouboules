@@ -2,6 +2,9 @@ extends CharacterBody2D
 
 const SPEED := 90.0
 const MAX_HEALTH := 3
+const COIN_DROP_CHANCE := 0.5
+
+const CoinScene := preload("res://scenes/items/coin.tscn")
 
 signal died
 
@@ -25,7 +28,15 @@ func _physics_process(_delta: float) -> void:
 func take_damage(amount: int) -> void:
 	health -= amount
 	if health <= 0:
+		_drop_loot()
 		died.emit()
 		queue_free()
 		return
 	health_bar.set_health(health, MAX_HEALTH)
+
+
+func _drop_loot() -> void:
+	if randf() < COIN_DROP_CHANCE:
+		var coin: Node2D = CoinScene.instantiate()
+		get_parent().add_child(coin)
+		coin.global_position = global_position
